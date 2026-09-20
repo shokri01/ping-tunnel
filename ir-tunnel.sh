@@ -83,6 +83,8 @@ for u in json.load(open('$WORK/users.json')):
     echo '[{"name":"default","id":"'"$UID1"'"}]' > "$WORK/users.json"
     CLIENTS='[{"id":"'"$UID1"'","email":"default","flow":"xtls-rprx-vision"}]'
   fi
+  mkdir -p /usr/local/etc/xray
+  [ -f /usr/local/etc/xray/config.json ] && cp /usr/local/etc/xray/config.json /usr/local/etc/xray/config.json.bak.$(date +%s)
   cat > "$WORK/inbounds.json" <<EOF
 [{
   "listen": "0.0.0.0",
@@ -113,17 +115,7 @@ print("config ok")
 PYEOF
   make_unit "ir-tunnel" "Reality Tunnel (Kharej side)" "/usr/local/etc/xray/config.json"
   systemctl restart ir-tunnel
-  # اعتبارنامه
-  PUBK="$PUB"
-  cat > /root/reality-credentials.txt <<EOF
-KAREJ_IP=$(curl -s -m 5 ifconfig.me || hostname -I | awk '{print $1}')
-REALITY_PORT=443
-UUID=$CLIENTS_UUID
-PUB=$PUBK
-SID=$SID
-SNI=$SNI
-EOF
-  # ساده‌تر: از users.json
+  # اعتبارنامه (از users.json — کاربر اول)
   UUUID=$(python3 -c "import json;print(json.load(open('$WORK/users.json'))[0]['id'])")
   cat > /root/reality-credentials.txt <<EOF
 KAREJ_IP=$(curl -s -m 5 ifconfig.me || echo "IP-KHAREJ")
